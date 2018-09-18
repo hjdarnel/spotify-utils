@@ -1,0 +1,23 @@
+{
+    "extends" : [
+        "tslint:recommended",
+        "tslint-config-prettier",
+        "tslint-plugin-prettier"
+    ],
+    "rules": {
+        "prettier": "true",
+        "quotemark": [true, "single", "avoid-escape"],
+        "ordered-imports": [false],
+        "no-any": false,
+        "only-arrow-functions": [true],
+        "no-require-imports": false,
+        "no-var-requires": false,
+        "object-literal-sort-keys": false,
+        "trailing-comma": [false],
+        "max-line-length": [false],
+        "no-angle-bracket-type-assertion": false,
+        "member-access": false,
+        "no-empty": false,
+        "no-shadowed-variable": false
+    }
+}
