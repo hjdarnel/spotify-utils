@@ -8,5 +8,7 @@ Exposes the following routes on port 80 (probably bad practice 😬)
 ```
 GET  /callback           -- redirect route for Spotify user authentication
 POST /                   -- add currently playing track to selected playlist
+POST /add                -- add currently playing track to selected playlist (same as ☝)
+POST /add/playlist/:id   -- add currently track to playlist with id
 POST /playlist/:id       -- change the default playlist to add tracks
 ```
