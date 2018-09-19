@@ -50,7 +50,7 @@ const callback = async (req: any, res: any) => {
 const respond = async (req: any, res: any) => {
     try {
         try {
-            await addSongToPlaylist();
+            await addSongToPlaylist(req.params.id);
             send(res, 200, 'OK');
         } catch (err) {
             send(res, 500, err);
@@ -80,10 +80,10 @@ const respond = async (req: any, res: any) => {
     }
 };
 
-const addSongToPlaylist = async (): Promise<any> => {
+const addSongToPlaylist = async (playlist?: string): Promise<any> => {
     try {
         const songUri = await getCurrentSong();
-        return await addTracksToPlaylist(songUri);
+        return await addTracksToPlaylist(songUri, playlist);
     } catch (err) {
         throw err;
     }
@@ -93,6 +93,7 @@ const getCurrentSong = async (): Promise<any> => {
     try {
         const data = await spotifyApi.getMyCurrentPlayingTrack({});
         if (data.body.is_playing !== true) {
+            logger.info('Request received, no track playing');
             return;
         }
         return [data.body.item.uri];
@@ -102,8 +103,13 @@ const getCurrentSong = async (): Promise<any> => {
     }
 };
 
-const addTracksToPlaylist = async (songUri: string[]): Promise<any> => {
+const addTracksToPlaylist = async (songUri: string[], id?: string): Promise<any> => {
     try {
+        if (id) {
+            logger.info(`Adding song ${songUri} to playlist ${id}`);
+            return await spotifyApi.addTracksToPlaylist(id, songUri);
+        }
+        logger.info(`Adding song ${songUri} to playlist ${playlistId}`);
         return await spotifyApi.addTracksToPlaylist(playlistId, songUri);
     } catch (err) {
         logger.warn('Error adding track to playlist', err);
@@ -112,6 +118,9 @@ const addTracksToPlaylist = async (songUri: string[]): Promise<any> => {
 };
 
 const playlist = async (req: any, res: any): Promise<any> => {
+    if (!req.params.id) {
+        throw Error('No id given');
+    }
     playlistId = req.params.id;
     logger.info(`Set playlistId to ${playlistId}`);
     return `Set playlistId to ${playlistId}`;
@@ -119,6 +128,8 @@ const playlist = async (req: any, res: any): Promise<any> => {
 
 export default router(
     post('/', respond),
+    post('/add', respond),
+    post('/add/playlist/:id', respond),
     post('/playlist/:id', playlist),
     get('/callback', callback)
 );
