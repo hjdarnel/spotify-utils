@@ -1,7 +1,7 @@
 import { send } from 'micro';
 import { router, get, post } from 'microrouter';
 import { createLogger } from 'bunyan';
-const SpotifyWebApi = require('spotify-web-api-node');
+import * as SpotifyWebApi from 'spotify-web-api-node';
 
 const logger = createLogger({
     name: 'spotify',
@@ -31,30 +31,23 @@ let playlistId = '4GsTcyIUqXc5edk1D1ieSr';
 
 const callback = async (req: any, res: any) => {
     const query = req.query;
-    await spotifyApi.authorizationCodeGrant(query.code).then(
-        (data: any) => {
-            // Set the access token on the API object to use it in later calls
-            spotifyApi.setAccessToken(data.body.access_token);
-            spotifyApi.setRefreshToken(data.body.refresh_token);
-        },
-        (err: any) => {
-            logger.info('Something went wrong!', err);
-        }
-    );
-    logger.info('Authenticated');
+    try {
+        const { body } = await spotifyApi.authorizationCodeGrant(query.code);
+
+        // Set the access token on the API object to use it in later calls
+        spotifyApi.setAccessToken(body.access_token);
+        spotifyApi.setRefreshToken(body.refresh_token);
+        logger.info('Authenticated');
+    } catch (err) {
+        logger.info('Something went wrong with auth!', err);
+    }
 };
 
 const respond = async (req: any, res: any) => {
     try {
-        await spotifyApi.refreshAccessToken().then(
-            (data: any) => {
-                logger.info('The access token has been refreshed!');
-                spotifyApi.setAccessToken(data.body.access_token);
-            },
-            (err: any) => {
-                logger.info('Could not refresh access token', err);
-            }
-        );
+        const { body } = await spotifyApi.refreshAccessToken();
+        logger.info('The access token has been refreshed!');
+        await spotifyApi.setAccessToken(body.access_token);
     } catch (err) {
         logger.warn('Cannot refresh access token', err);
         send(res, 500, 'Error saving song');
