@@ -44,39 +44,27 @@ const callback = async (req: any, res: any) => {
     logger.info('Authenticated');
 };
 
-// Todo: refactor all this nastiness
-// ? We want to retry once, refreshing the access code first, and then actually fail
-// ? if we actually fail, then we should return 500 instead of 200.
 const respond = async (req: any, res: any) => {
     try {
-        try {
-            await addSongToPlaylist(req.params.id);
-            send(res, 200, 'OK');
-        } catch (err) {
-            send(res, 500, err);
-        }
-    } catch (e) {
-        try {
-            await spotifyApi.refreshAccessToken().then(
-                (data: any) => {
-                    logger.info('The access token has been refreshed!');
-                    spotifyApi.setAccessToken(data.body.access_token);
-                },
-                (err: any) => {
-                    logger.info('Could not refresh access token', err);
-                }
-            );
-            try {
-                await addSongToPlaylist();
-                send(res, 200, 'OK');
-            } catch (err) {
-                send(res, 500, err);
+        await spotifyApi.refreshAccessToken().then(
+            (data: any) => {
+                logger.info('The access token has been refreshed!');
+                spotifyApi.setAccessToken(data.body.access_token);
+            },
+            (err: any) => {
+                logger.info('Could not refresh access token', err);
             }
-        } catch (err) {
-            logger.warn('Cannot refresh access token', err);
-            send(res, 500, 'Error saving song');
-        }
-        logger.info('Error saving song, trying to refresh access token', e);
+        );
+    } catch (err) {
+        logger.warn('Cannot refresh access token', err);
+        send(res, 500, 'Error saving song');
+    }
+
+    try {
+        await addSongToPlaylist();
+        send(res, 200, 'OK');
+    } catch (err) {
+        send(res, 400, err.message);
     }
 };
 
@@ -94,12 +82,12 @@ const getCurrentSong = async (): Promise<any> => {
         const data = await spotifyApi.getMyCurrentPlayingTrack({});
         if (data.body.is_playing !== true) {
             logger.info('Request received, no track playing');
-            return;
+            throw Error('No track playing');
         }
         return [data.body.item.uri];
     } catch (err) {
         logger.warn('Error getting current song', err);
-        throw Error(err);
+        throw Error(err.message);
     }
 };
 
@@ -113,7 +101,7 @@ const addTracksToPlaylist = async (songUri: string[], id?: string): Promise<any>
         return await spotifyApi.addTracksToPlaylist(playlistId, songUri);
     } catch (err) {
         logger.warn('Error adding track to playlist', err);
-        throw Error(err);
+        throw Error(err.message);
     }
 };
 
