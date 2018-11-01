@@ -33,7 +33,6 @@ const callback = async (req: any, res: any) => {
     const query = req.query;
     try {
         const { body } = await spotifyApi.authorizationCodeGrant(query.code);
-
         // Set the access token on the API object to use it in later calls
         spotifyApi.setAccessToken(body.access_token);
         spotifyApi.setRefreshToken(body.refresh_token);
@@ -43,21 +42,29 @@ const callback = async (req: any, res: any) => {
     }
 };
 
-const respond = async (req: any, res: any) => {
+const refreshToken = async () => {
     try {
         const { body } = await spotifyApi.refreshAccessToken();
         logger.info('The access token has been refreshed!');
         await spotifyApi.setAccessToken(body.access_token);
     } catch (err) {
         logger.warn('Cannot refresh access token', err);
-        send(res, 500, 'Error saving song');
+        throw Error('Cannot refresh access token');
     }
+};
 
+const respond = async (req: any, res: any) => {
     try {
         await addSongToPlaylist();
         send(res, 200, 'OK');
     } catch (err) {
-        send(res, 400, err.message);
+        if (err.statusCode === 401) {
+            await refreshToken();
+            await addSongToPlaylist();
+            send(res, 200, 'OK');
+        } else {
+            send(res, 400, err.message);
+        }
     }
 };
 
@@ -80,7 +87,7 @@ const getCurrentSong = async (): Promise<any> => {
         return [data.body.item.uri];
     } catch (err) {
         logger.warn('Error getting current song', err);
-        throw Error(err.message);
+        throw err;
     }
 };
 
@@ -94,7 +101,7 @@ const addTracksToPlaylist = async (songUri: string[], id?: string): Promise<any>
         return await spotifyApi.addTracksToPlaylist(playlistId, songUri);
     } catch (err) {
         logger.warn('Error adding track to playlist', err);
-        throw Error(err.message);
+        throw err;
     }
 };
 
