@@ -5,6 +5,8 @@ Leverages the Spotify Web API, using [@thelinmichael's NodeJS wrapper](https://g
 
 Exposes the following routes on port 80 (probably bad practice 😬)
 
+HI
+
 ```
 GET  /callback           -- redirect route for Spotify user authentication
 POST /                   -- add currently playing track to selected playlist
