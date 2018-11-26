@@ -1,7 +1,7 @@
 {
     "version": 1,
     "name": "spotify-util",
-    "alias": "spotify-util.now.sh",
+    "alias": ["spotify-util.darnell.io"],
     "env": {
         "CLIENTID": "@spotify-client-id",
         "CLIENTSECRET": "@spotify-client-secret"

@@ -20,7 +20,7 @@ const state = 'some-state-of-my-choice';
 const spotifyApi = new SpotifyWebApi({
     clientId: CLIENTID,
     clientSecret: CLIENTSECRET,
-    redirectUri: 'https://spotify-util.now.sh/callback'
+    redirectUri: 'https://spotify-util.darnell.io/callback'
 });
 
 const authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
