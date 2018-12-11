@@ -4,7 +4,7 @@
   "description": "",
   "main": "./bin/index.js",
   "scripts": {
-    "lint": "tslint --format verbose src/**/*.ts",
+    "lint": "tslint --format verbose 'src/**/*.ts'",
     "cleanbin": "rm -rf bin/",
     "build": "npm-run-all build:*",
     "build:clean": "npm run cleanbin",
