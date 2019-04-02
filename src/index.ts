@@ -1,3 +1,4 @@
+require('dotenv-safe').config();
 import { send } from 'micro';
 import { router, get, post } from 'microrouter';
 import { createLogger } from 'bunyan';
