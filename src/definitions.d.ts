@@ -17,8 +17,13 @@ declare module 'spotify-web-api-node' {
         setRefreshToken(token: string): void;
 
         getMyCurrentPlayingTrack({}): Promise<{ body: CurrentlyPlayingTrack }>;
+        getMyRecentlyPlayedTracks({}): Promise<{ body: PlayHistoryObject }>;
         addTracksToPlaylist(id: string, songUri: string[]): Promise<{ snapshot_id: string }>;
     }
+
+    type PlayHistoryObject = {
+        items: any
+    };
 
     type CurrentlyPlayingTrack = {
         context: Context;
