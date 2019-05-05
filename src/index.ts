@@ -36,7 +36,7 @@ const authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
 logger.info(authorizeURL);
 
 // default playlist, is public
-let playlistId = '4GsTcyIUqXc5edk1D1ieSr';
+let playlistId = '1ju0e3qeC1TnAfVHWHwvNM';
 
 const callback = async (req: any, res: any) => {
     const query = req.query;
