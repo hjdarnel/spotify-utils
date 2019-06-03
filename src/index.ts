@@ -55,7 +55,7 @@ const refreshToken = async () => {
     try {
         const { body } = await spotifyApi.refreshAccessToken();
         logger.info('The access token has been refreshed!');
-        await spotifyApi.setAccessToken(body.access_token);
+        spotifyApi.setAccessToken(body.access_token);
     } catch (err) {
         logger.warn('Cannot refresh access token', err);
         throw Error('Cannot refresh access token');
@@ -65,12 +65,12 @@ const refreshToken = async () => {
 const respond = async (req: any, res: any) => {
     try {
         await addSongToPlaylist();
-        send(res, 200, 'OK');
+        send(res, 200, 'Added song to playlist.');
     } catch (err) {
         if (err.statusCode === 401) {
             await refreshToken();
             await addSongToPlaylist();
-            send(res, 200, 'OK');
+            send(res, 200, 'Added song to playlist.');
         } else {
             send(res, 400, err.message);
         }
@@ -78,30 +78,22 @@ const respond = async (req: any, res: any) => {
 };
 
 const addSongToPlaylist = async (playlist?: string): Promise<any> => {
-    try {
-        let songUri: any;
-        songUri = await getCurrentSong().catch(async e => {
-            if (e.message === 'No track playing') {
-                return await getLastSong();
-            }
-        });
-        return await addTracksToPlaylist(songUri, playlist);
-    } catch (err) {
-        throw err;
-    }
+    let songUri: any;
+    songUri = await getCurrentSong().catch(async e => {
+        if (e.message === 'No track playing') {
+            return await getLastSong();
+        }
+    });
+    return await addTracksToPlaylist(songUri, playlist);
 };
 
 const getCurrentSong = async (): Promise<string[]> => {
-    try {
-        const data = await spotifyApi.getMyCurrentPlayingTrack({});
-        if (data.body.is_playing !== true) {
-            logger.info('Request received, no track playing');
-            throw Error('No track playing');
-        }
-        return [data.body.item.uri];
-    } catch (err) {
-        throw err;
+    const data = await spotifyApi.getMyCurrentPlayingTrack({});
+    if (data.body.is_playing !== true) {
+        logger.info('Request received, no track playing');
+        throw Error('No track playing');
     }
+    return [data.body.item.uri];
 };
 
 const getLastSong = async (): Promise<string[]> => {
